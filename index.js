@@ -1,78 +1,128 @@
 const express = require('express');
 const axios = require('axios');
-const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+// Rota para status do mercado
+app.get('/mercado/status', async (req, res) => {
+  try {
+    const response = await axios.get('https://api.cartola.globo.com/mercado/status');
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar status do mercado' });
+  }
+});
 
-const CARTOLA_API = 'https://api.cartolafc.globo.com';
-
-// Mercado de jogadores
+// Rota para o mercado de atletas (já usada no frontend)
 app.get('/mercado', async (req, res) => {
   try {
-    const response = await axios.get(`${CARTOLA_API}/atletas/mercado`, {
-      headers: { 'Authorization': req.headers['authorization'] || '' }
-    });
+    const response = await axios.get('https://api.cartola.globo.com/atletas/mercado');
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ erro: error.message });
+    res.status(500).json({ erro: 'Erro ao buscar mercado' });
   }
 });
 
-// Time do usuário
-app.get('/time', async (req, res) => {
+// Rota para atletas pontuados (você pode passar a rodada como parâmetro)
+app.get('/atletas/pontuados/:rodada?', async (req, res) => {
+  const rodada = req.params.rodada || '';
+  const url = rodada 
+    ? `https://api.cartola.globo.com/atletas/pontuados/${rodada}`
+    : 'https://api.cartola.globo.com/atletas/pontuados';
   try {
-    const response = await axios.get(`${CARTOLA_API}/time/time-do-usuario`, {
-      headers: { 'Authorization': req.headers['authorization'] || '' }
-    });
+    const response = await axios.get(url);
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ erro: error.message });
+    res.status(500).json({ erro: 'Erro ao buscar pontuados' });
   }
 });
 
-// Parciais
-app.get('/parciais', async (req, res) => {
+// Rota para destaques pós-rodada
+app.get('/pos-rodada/destaques', async (req, res) => {
   try {
-    const response = await axios.get(`${CARTOLA_API}/atletas/pontuados`, {
-      headers: { 'Authorization': req.headers['authorization'] || '' }
-    });
+    const response = await axios.get('https://api.cartola.globo.com/pos-rodada/destaques');
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ erro: error.message });
+    res.status(500).json({ erro: 'Erro ao buscar destaques' });
   }
 });
 
-// Partidas da rodada
-app.get('/partidas', async (req, res) => {
+// Rota para clubes
+app.get('/clubes', async (req, res) => {
   try {
-    const response = await axios.get(`${CARTOLA_API}/partidas`, {
-      headers: { 'Authorization': req.headers['authorization'] || '' }
-    });
+    const response = await axios.get('https://api.cartola.globo.com/clubes');
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ erro: error.message });
+    res.status(500).json({ erro: 'Erro ao buscar clubes' });
   }
 });
 
-// Salvar escalação
-app.post('/escalar', async (req, res) => {
+// Rota para posições
+app.get('/posicoes', async (req, res) => {
   try {
-    const response = await axios.post(`${CARTOLA_API}/time/salvar`, req.body, {
-      headers: {
-        'Authorization': req.headers['authorization'] || '',
-        'Content-Type': 'application/json'
-      }
-    });
+    const response = await axios.get('https://api.cartola.globo.com/posicoes');
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ erro: error.message });
+    res.status(500).json({ erro: 'Erro ao buscar posições' });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+// Rota para partidas (todas ou de uma rodada específica)
+app.get('/partidas/:rodada?', async (req, res) => {
+  const rodada = req.params.rodada || '';
+  const url = rodada 
+    ? `https://api.cartola.globo.com/partidas/${rodada}`
+    : 'https://api.cartola.globo.com/partidas';
+  try {
+    const response = await axios.get(url);
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar partidas' });
+  }
 });
+
+// Rota para vídeos
+app.get('/videos', async (req, res) => {
+  try {
+    const response = await axios.get('https://api.cartola.globo.com/videos');
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar vídeos' });
+  }
+});
+
+// Rota para rodadas
+app.get('/rodadas', async (req, res) => {
+  try {
+    const response = await axios.get('https://api.cartola.globo.com/rodadas');
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar rodadas' });
+  }
+});
+
+// Rota para rankings (pode conter dados de ligas)
+app.get('/rankings', async (req, res) => {
+  try {
+    const response = await axios.get('https://api.cartola.globo.com/rankings');
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar rankings' });
+  }
+});
+
+// Rota para uma liga específica (exemplo com código)
+app.get('/liga/:codigo', async (req, res) => {
+  const { codigo } = req.params;
+  try {
+    // A API pública de ligas pode não existir; fazemos uma tentativa com o endpoint /ligas/{codigo}
+    const response = await axios.get(`https://api.cartola.globo.com/ligas/${codigo}`);
+    res.json(response.data);
+  } catch (error) {
+    // Se não funcionar, retornamos um erro amigável
+    res.status(404).json({ erro: 'Liga não encontrada ou API indisponível' });
+  }
+});
+
+app.listen(PORT, () => console.log(`Proxy rodando na porta ${PORT}`));
