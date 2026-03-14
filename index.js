@@ -1,10 +1,16 @@
 const express = require('express');
 const axios = require('axios');
+const cors = require('cors'); // Importa o CORS para permitir requisições de outros domínios
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Rota para status do mercado
+// Habilita CORS para todas as origens (resolve o erro de política)
+app.use(cors());
+
+// ==================== ROTAS EXISTENTES ====================
+
+// Status do mercado
 app.get('/mercado/status', async (req, res) => {
   try {
     const response = await axios.get('https://api.cartola.globo.com/mercado/status');
@@ -14,7 +20,7 @@ app.get('/mercado/status', async (req, res) => {
   }
 });
 
-// Rota para o mercado de atletas (já usada no frontend)
+// Mercado de atletas
 app.get('/mercado', async (req, res) => {
   try {
     const response = await axios.get('https://api.cartola.globo.com/atletas/mercado');
@@ -24,7 +30,7 @@ app.get('/mercado', async (req, res) => {
   }
 });
 
-// Rota para atletas pontuados (você pode passar a rodada como parâmetro)
+// Atletas pontuados (com ou sem rodada)
 app.get('/atletas/pontuados/:rodada?', async (req, res) => {
   const rodada = req.params.rodada || '';
   const url = rodada 
@@ -38,7 +44,7 @@ app.get('/atletas/pontuados/:rodada?', async (req, res) => {
   }
 });
 
-// Rota para destaques pós-rodada
+// Destaques pós-rodada
 app.get('/pos-rodada/destaques', async (req, res) => {
   try {
     const response = await axios.get('https://api.cartola.globo.com/pos-rodada/destaques');
@@ -48,7 +54,7 @@ app.get('/pos-rodada/destaques', async (req, res) => {
   }
 });
 
-// Rota para clubes
+// Clubes
 app.get('/clubes', async (req, res) => {
   try {
     const response = await axios.get('https://api.cartola.globo.com/clubes');
@@ -58,7 +64,7 @@ app.get('/clubes', async (req, res) => {
   }
 });
 
-// Rota para posições
+// Posições
 app.get('/posicoes', async (req, res) => {
   try {
     const response = await axios.get('https://api.cartola.globo.com/posicoes');
@@ -68,7 +74,7 @@ app.get('/posicoes', async (req, res) => {
   }
 });
 
-// Rota para partidas (todas ou de uma rodada específica)
+// Partidas (todas ou de uma rodada específica)
 app.get('/partidas/:rodada?', async (req, res) => {
   const rodada = req.params.rodada || '';
   const url = rodada 
@@ -82,7 +88,7 @@ app.get('/partidas/:rodada?', async (req, res) => {
   }
 });
 
-// Rota para vídeos
+// Vídeos
 app.get('/videos', async (req, res) => {
   try {
     const response = await axios.get('https://api.cartola.globo.com/videos');
@@ -92,7 +98,7 @@ app.get('/videos', async (req, res) => {
   }
 });
 
-// Rota para rodadas
+// Rodadas
 app.get('/rodadas', async (req, res) => {
   try {
     const response = await axios.get('https://api.cartola.globo.com/rodadas');
@@ -102,7 +108,7 @@ app.get('/rodadas', async (req, res) => {
   }
 });
 
-// Rota para rankings (pode conter dados de ligas)
+// Rankings
 app.get('/rankings', async (req, res) => {
   try {
     const response = await axios.get('https://api.cartola.globo.com/rankings');
@@ -112,17 +118,35 @@ app.get('/rankings', async (req, res) => {
   }
 });
 
-// Rota para uma liga específica (exemplo com código)
-app.get('/liga/:codigo', async (req, res) => {
-  const { codigo } = req.params;
-  try {
-    // A API pública de ligas pode não existir; fazemos uma tentativa com o endpoint /ligas/{codigo}
-    const response = await axios.get(`https://api.cartola.globo.com/ligas/${codigo}`);
-    res.json(response.data);
-  } catch (error) {
-    // Se não funcionar, retornamos um erro amigável
-    res.status(404).json({ erro: 'Liga não encontrada ou API indisponível' });
+// ==================== ROTA PARA COMPETIÇÕES (NOVA) ====================
+// Exemplo de uso:
+//   /competicao/liga/taca-nattos
+//   /competicao/pontoscorridos/d5rp3vak58ms73eri3d0
+app.get('/competicao/:tipo/:codigo', async (req, res) => {
+  const { tipo, codigo } = req.params;
+
+  // Monta a URL da página pública da competição no site do Cartola
+  let url;
+  if (tipo === 'liga') {
+    url = `https://cartola.globo.com/#!/liga/${codigo}`;
+  } else if (tipo === 'pontoscorridos') {
+    url = `https://cartola.globo.com/#!/competicoes/pontoscorridos/${codigo}`;
+  } else {
+    return res.status(400).json({ erro: 'Tipo de competição inválido. Use "liga" ou "pontoscorridos".' });
   }
+
+  // Como a API pública do Cartola não fornece dados estruturados de ligas,
+  // retornamos um objeto com a URL para que o frontend possa exibir um link.
+  // Futuramente, podemos implementar scraping para extrair os dados.
+  res.json({
+    mensagem: 'Os dados detalhados desta competição não estão disponíveis via API pública.',
+    link: url,
+    tipo: tipo,
+    codigo: codigo
+  });
 });
 
-app.listen(PORT, () => console.log(`Proxy rodando na porta ${PORT}`));
+// Inicia o servidor
+app.listen(PORT, () => {
+  console.log(`Proxy rodando na porta ${PORT}`);
+});
