@@ -10,6 +10,31 @@ app.use(cors());
 
 // ==================== ROTAS EXISTENTES ====================
 
+// Lineups (escalações)
+app.get('/provaveis/lineups', async (req, res) => {
+  try {
+    const response = await axios.get('https://provaveisdocartola.com.br/assets/data/lineups.json', {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar lineups' });
+  }
+});
+
+// Mercado de imagens (dados dos jogadores)
+app.get('/provaveis/mercado-images', async (req, res) => {
+  try {
+    const response = await axios.get('https://provaveisdocartola.com.br/assets/data/mercado.images.json', {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar mercado.images' });
+  }
+});
+
+
 // Status do mercado
 app.get('/mercado/status', async (req, res) => {
   try {
