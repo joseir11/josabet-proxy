@@ -34,6 +34,18 @@ app.get('/provaveis/mercado-images', async (req, res) => {
   }
 });
 
+// Team updates 
+app.get('/provaveis/team-updates', async (req, res) => {
+  try {
+    const response = await axios.get('https://provaveisdocartola.com.br/assets/data/team-updates.json', {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar team-updates' });
+  }
+});
+
 
 // Status do mercado
 app.get('/mercado/status', async (req, res) => {
