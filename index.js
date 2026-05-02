@@ -125,13 +125,13 @@ app.get('/partidas/:rodada?', async (req, res) => {
   }
 });
 
-// Vídeos
-app.get('/videos', async (req, res) => {
+// Pontuados
+app.get('/atletas/pontuados', async (req, res) => {
   try {
-    const response = await axios.get('https://api.cartola.globo.com/videos');
+    const response = await axios.get('https://api.cartola.globo.com/atletas/pontuados');
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ erro: 'Erro ao buscar vídeos' });
+    res.status(500).json({ erro: 'Erro ao buscar pontuados' });
   }
 });
 
