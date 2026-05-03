@@ -183,6 +183,17 @@ app.get('/competicao/:tipo/:codigo', async (req, res) => {
   });
 });
 
+// ROTA PARA TRAZER INFO TIME LOGIN
+app.get('/time/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const response = await axios.get(`https://api.cartola.globo.com/time/id/${id}`);
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar dados do time' });
+  }
+});
+
 // Inicia o servidor
 app.listen(PORT, () => {
   console.log(`Proxy rodando na porta ${PORT}`);
