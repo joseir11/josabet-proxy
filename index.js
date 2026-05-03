@@ -194,7 +194,7 @@ app.get('/time/:id', async (req, res) => {
   }
 });
 
-// VALORIZACAO EM TEMPO REAL
+// ROTA PARA TRAZER A VALORIZAÇÃO EM TEMPO REAL (AWS)
 app.get('/aws/atletas-pontuados', async (req, res) => {
   try {
     const response = await axios.get(
@@ -206,15 +206,15 @@ app.get('/aws/atletas-pontuados', async (req, res) => {
       }
     );
 
+    // Retorna os dados da AWS diretamente para o seu frontend
     res.json(response.data);
 
   } catch (error) {
-
+    console.error('Erro na API AWS:', error.message);
     res.status(500).json({
       erro: 'Erro ao buscar atletas pontuados AWS',
       detalhe: error.message
     });
-
   }
 });
 
