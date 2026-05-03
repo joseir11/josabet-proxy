@@ -194,6 +194,30 @@ app.get('/time/:id', async (req, res) => {
   }
 });
 
+// VALORIZACAO EM TEMPO REAL
+app.get('/aws/atletas-pontuados', async (req, res) => {
+  try {
+    const response = await axios.get(
+      'https://pb89hpsof3.execute-api.us-east-1.amazonaws.com/prod/atletas-pontuados',
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0'
+        }
+      }
+    );
+
+    res.json(response.data);
+
+  } catch (error) {
+
+    res.status(500).json({
+      erro: 'Erro ao buscar atletas pontuados AWS',
+      detalhe: error.message
+    });
+
+  }
+});
+
 // Inicia o servidor
 app.listen(PORT, () => {
   console.log(`Proxy rodando na porta ${PORT}`);
