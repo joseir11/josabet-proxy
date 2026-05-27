@@ -251,6 +251,19 @@ app.get('/aws/atletas-pontuados', async (req, res) => {
   }
 });
 
+// ROTA VALIDACAO / TESTE LOGIN VIA TOKEN - CASO NÃO FUNCIONE, APAGAR POSTERIORMENTE ESTE TRECHO
+app.get('/meu-time', async (req, res) => {
+  const token = req.headers['x-glb-token'];
+  try {
+    const response = await axiosInstance.get('https://api.cartolafc.globo.com/auth/time', {
+      headers: { 'X-GLB-Token': token }
+    });
+    res.json(response.data);
+  } catch (e) {
+    res.status(401).json({ erro: 'Token inválido' });
+  }
+});
+
 // ==================== START ====================
 app.listen(PORT, () => {
   console.log(`🚀 Proxy rodando na porta ${PORT}`);
