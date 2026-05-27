@@ -253,14 +253,31 @@ app.get('/aws/atletas-pontuados', async (req, res) => {
 
 // ROTA VALIDACAO / TESTE LOGIN VIA TOKEN - CASO NÃO FUNCIONE, APAGAR POSTERIORMENTE ESTE TRECHO
 app.get('/meu-time', async (req, res) => {
-  const token = req.headers['x-glb-token'];
+  // Tenta pegar o token do header Authorization (Bearer)
+  let token = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7); // remove "Bearer "
+  }
+  
+  // Fallback: se veio como X-GLB-Token (legado)
+  if (!token) token = req.headers['x-glb-token'];
+  
+  if (!token) {
+    return res.status(401).json({ erro: 'Token não fornecido (use Authorization: Bearer)' });
+  }
+  
   try {
     const response = await axiosInstance.get('https://api.cartolafc.globo.com/auth/time', {
-      headers: { 'X-GLB-Token': token }
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     });
     res.json(response.data);
-  } catch (e) {
-    res.status(401).json({ erro: 'Token inválido' });
+  } catch (error) {
+    console.error('Erro no proxy:', error.message);
+    res.status(401).json({ erro: 'Token inválido ou expirado' });
   }
 });
 
